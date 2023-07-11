@@ -26,6 +26,9 @@ function createPlayer() {
     moveHistory: [], //move: w / l
 
     addMoveToHistory(move, result) {
+      if (!(Object.values(MOVE_CHOICES).includes(move))) return;
+      if (!(['win', 'loss', 'tie'].includes(move))) return;
+      
       this.moveHistory.push([move, result]);
     },
 
@@ -58,6 +61,7 @@ function createPlayer() {
     },
 
     setMove(move) {
+      if (!(Object.values(MOVE_CHOICES).includes(move))) return;
       this.move = move;
     },
 
@@ -229,9 +233,9 @@ const RPSGame = {
     console.log("Enter 'h' to see move history, otherwise press 'enter' to continue to next game.");
 
     while (true) {
-      let input = readline.question();
+      let input = readline.question().trim().toLowerCase();
 
-      if (input === 'h') {
+      if (input === 'h' || input === 'history') {
         this.displayMoveHistory();
         break;
       } else if (input === '') {
@@ -306,19 +310,19 @@ const RPSGame = {
   },
 
   displayMatchWinner() {
-    if (this.human.getScore() === GAME_WINS) {
-      console.log('You win the match with 5 game wins!');
-    } else if (this.computer.getScore() === GAME_WINS) {
-      console.log('Computer wins the match with 5 game wins. You lose :(');
+    if (this.human.getScore() >= GAME_WINS) {
+      console.log(`You win the match with ${GAME_WINS} game wins!`);
+    } else if (this.computer.getScore() >= GAME_WINS) {
+      console.log(`Computer wins the match with ${GAME_WINS} game wins. You lose :(`);
     }
     this.displayDivider();
   },
 
   determineMatchWinner() {
-    if (this.human.getScore() === GAME_WINS) {
+    if (this.human.getScore() >= GAME_WINS) {
       this.displayMatchWinner();
       return true;
-    } else if (this.computer.getScore() === GAME_WINS) {
+    } else if (this.computer.getScore() >= GAME_WINS) {
       this.displayMatchWinner();
       return true;
     }
