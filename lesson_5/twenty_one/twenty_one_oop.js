@@ -152,13 +152,13 @@ class Player extends Participant {
   deductOneBalance() {
     this.moneyBalance -= Player.WAGER_AMOUNT;
   }
-  
+
   isBroke() {
-    return this.moneyBalance <= TwentyOneGame.BROKE_BALANCE;
+    return this.moneyBalance <= Player.BROKE_BALANCE;
   }
-  
+
   beatHouse() {
-    return this.moneyBalance >= TwentyOneGame.WINNING_BALANCE;
+    return this.moneyBalance >= Player.WINNING_BALANCE;
   }
 }
 
