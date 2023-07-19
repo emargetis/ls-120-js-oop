@@ -14,6 +14,7 @@ class Card {
   }
 
   reduceAceValue() {
+    if(this.rank !== 'A') return;
     this.value = 1;
   }
 
@@ -63,10 +64,12 @@ class Deck {
 }
 
 class Participant {
+  static TWENTY_ONE = 21;
+  
   constructor() {
     this.hand = [];
     this.score = 0;
-    this.onlyFirst = null;
+    this.showFirstCard = null;
   }
 
   hit(card) {
@@ -78,7 +81,7 @@ class Participant {
   }
 
   isBusted() {
-    return this.score > 21;
+    return this.score > Participant.TWENTY_ONE;
   }
 
   getScore() {
@@ -105,7 +108,7 @@ class Participant {
   showHand() {
     let handStr = '';
 
-    if (this.onlyFirst) {
+    if (this.showFirstCard) {
       handStr += this.getCard(0).getRank() + this.getCard(0).getSuit();
     } else {
       this.hand.forEach((card, idx) => {
@@ -125,11 +128,11 @@ class Participant {
   }
 
   hideHand() {
-    this.onlyFirst = true;
+    this.showFirstCard = true;
   }
 
   revealHand() {
-    this.onlyFirst = false;
+    this.showFirstCard = false;
   }
 }
 
@@ -138,6 +141,8 @@ class Player extends Participant {
   static WINNING_BALANCE = 2 * Player.START_BALANCE;
   static BROKE_BALANCE = 0;
   static WAGER_AMOUNT = 1;
+  static HIT_INPUT = 'h';
+  static STAY_INPUT = 's';
 
   constructor() {
     super();
@@ -145,12 +150,16 @@ class Player extends Participant {
     this.moneyBalance = Player.START_BALANCE;
   }
 
-  addOneBalance() {
+  addBalance() {
     this.moneyBalance += Player.WAGER_AMOUNT;
   }
 
-  deductOneBalance() {
+  deductBalance() {
     this.moneyBalance -= Player.WAGER_AMOUNT;
+  }
+  
+  getBalance() {
+    return this.moneyBalance;
   }
 
   isBroke() {
@@ -225,7 +234,7 @@ class TwentyOneGame {
     let choice = readline.question().trim().toLowerCase();
 
     while (true) {
-      if (['h', 's'].includes(choice)) break;
+      if ([Player.HIT_INPUT, Player.STAY_INPUT].includes(choice)) break;
       console.log('Invalid choice. Enter "H" for hit or "S" for stay.');
       choice = readline.question().trim().toLowerCase();
     }
@@ -240,9 +249,9 @@ class TwentyOneGame {
 
       let choice = this.playerHitorStay();
 
-      if (choice === 'h') {
+      if (choice === Player.HIT_INPUT) {
         this.player.hit(this.deck.deal());
-      } else if (choice === 's') {
+      } else if (choice === Player.STAY_INPUT) {
         break;
       }
 
@@ -313,12 +322,15 @@ class TwentyOneGame {
     this.displayDealerTotal();
 
     this.displayDivider();
+    
+    let dealerScore = this.dealer.getScore();
+    let playerScore = this.player.getScore();
 
     if (this.dealer.isBusted()) {
       console.log('Dealer busted. You win :)');
-    } else if (this.dealer.getScore() > this.player.getScore()) {
+    } else if (dealerScore > playerScore) {
       console.log('Dealer wins. You lose :(');
-    } else if (this.dealer.getScore() < this.player.getScore()) {
+    } else if (dealerScore < playerScore) {
       console.log('You win :)');
     } else {
       console.log('Game was a push :|');
@@ -328,19 +340,22 @@ class TwentyOneGame {
   }
 
   payOut() {
+    let dealerScore = this.dealer.getScore();
+    let playerScore = this.player.getScore();
+
     if (this.player.isBusted()) {
-      this.player.deductOneBalance();
+      this.player.deductBalance();
     } else if (this.dealer.isBusted()) {
-      this.player.addOneBalance();
-    } else if (this.dealer.getScore() > this.player.getScore()) {
-      this.player.deductOneBalance();
-    } else if (this.dealer.getScore() < this.player.getScore()) {
-      this.player.addOneBalance();
+      this.player.addBalance();
+    } else if (dealerScore > playerScore) {
+      this.player.deductBalance();
+    } else if (dealerScore < playerScore) {
+      this.player.addBalance();
     }
   }
 
   displayMoneyBalance() {
-    console.log(`You current balance is: $${this.player.moneyBalance}`);
+    console.log(`You current balance is: $${this.player.getBalance()}`);
     this.displayDivider();
   }
 
